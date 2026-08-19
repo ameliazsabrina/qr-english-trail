@@ -1,0 +1,17 @@
+{
+  "name": "bonjotan-english-trail",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @bonjotan/api --filter @bonjotan/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "validate:content": "pnpm --filter @bonjotan/content validate"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
+
