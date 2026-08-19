@@ -32,6 +32,16 @@ Open <http://localhost:5173>. The web dev server proxies `/api` to <http://local
 
 To connect MongoDB, export `MONGODB_URI` before starting the API. The example configuration uses `mongodb://localhost:27018/bonjotan`. Environment files are ignored by Git; never commit production secrets.
 
+## Seed MongoDB
+
+With a non-production `MONGODB_URI` in the root `.env` file or exported in your shell, populate the three persistence collections with deterministic demo data:
+
+```bash
+pnpm seed:mongo
+```
+
+The command upserts three demo players and their matching quiz attempts and point completions, so it can be run repeatedly without duplicating records. It does not remove or modify other documents. The seed is blocked when `NODE_ENV=production`.
+
 ## Quality commands
 
 ```bash

@@ -13,16 +13,17 @@
   "dependencies": {
     "@bonjotan/shared-types": "workspace:*",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-router-dom": "^7.3.0"
+    "react-router-dom": "^7.3.0",
+    "vite": "latest"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
   }
 }
-

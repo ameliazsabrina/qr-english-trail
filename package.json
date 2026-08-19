@@ -8,10 +8,10 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "seed:mongo": "pnpm --filter @bonjotan/api seed:mongo",
     "validate:content": "pnpm --filter @bonjotan/content validate"
   },
   "engines": {
     "node": ">=22"
   }
 }
-

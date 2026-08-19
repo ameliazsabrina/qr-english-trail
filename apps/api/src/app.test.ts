@@ -22,6 +22,29 @@ describe("content API", () => {
     expect(response.json().point.questionCount).toBe(5);
   });
 
+  it("serves one mixed quiz without exposing answer keys", async () => {
+    const app = await createApp({ WEB_ORIGIN: "http://localhost:5173" });
+    apps.push(app);
+    const response = await app.inject({ method: "GET", url: "/api/quiz" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().questions).toHaveLength(50);
+    expect(response.body).not.toContain("correctOptionId");
+    expect(new Set(response.json().questions.map((question: { topic: string }) => question.topic)).size).toBe(10);
+  });
+
+  it("checks an answer without shipping the key in advance", async () => {
+    const app = await createApp({ WEB_ORIGIN: "http://localhost:5173" });
+    apps.push(app);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/quiz/check",
+      payload: { questionId: "p01-q1", optionId: "a" }
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().result.correct).toBe(true);
+    expect(response.json().result.explanation).toBeTruthy();
+  });
+
   it("returns a friendly error for an unknown QR slug", async () => {
     const app = await createApp({ WEB_ORIGIN: "http://localhost:5173" });
     apps.push(app);

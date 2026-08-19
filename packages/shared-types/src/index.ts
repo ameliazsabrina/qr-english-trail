@@ -50,6 +50,16 @@ export type LearningPoint = {
 
 export type PublicQuestion = Omit<Question, "correctOptionId" | "acceptedAnswers">;
 
+export type QuizQuestion = PublicQuestion & {
+  topic: string;
+};
+
+export type QuizAnswerResult = {
+  correct: boolean;
+  correctOptionId?: string;
+  explanation?: string;
+};
+
 export type PointSummary = Pick<
   LearningPoint,
   "id" | "slug" | "pointNumber" | "title" | "topic"

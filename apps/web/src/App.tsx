@@ -7,15 +7,12 @@ import { PointPage } from "./pages/PointPage";
 
 export function App() {
   return (
-    <AppShell>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/point/:slug" element={<PointPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/home" element={<Navigate to="/" replace />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </AppShell>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/point/:slug" element={<AppShell><PointPage /></AppShell>} />
+      <Route path="/leaderboard" element={<AppShell><LeaderboardPage /></AppShell>} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<AppShell><NotFoundPage /></AppShell>} />
+    </Routes>
   );
 }
-
