@@ -8,10 +8,17 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "seed:mongo": "pnpm --filter @bonjotan/api seed:mongo",
+    "db:generate": "pnpm --filter @bonjotan/api db:generate",
+    "db:migrate": "pnpm --filter @bonjotan/api db:migrate",
+    "db:seed": "pnpm --filter @bonjotan/api db:seed",
+    "db:backup": "pnpm --filter @bonjotan/api db:backup",
+    "db:studio": "pnpm --filter @bonjotan/api db:studio",
     "validate:content": "pnpm --filter @bonjotan/content validate"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24.2.0 <25"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
   }
 }

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.2.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm validate:content
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Verify migrations and idempotent seed
+        env:
+          SQLITE_PATH: /tmp/bonjotan-ci.sqlite
+          SESSION_TOKEN_PEPPER: ci-session-pepper-not-for-production
+          RECOVERY_CODE_PEPPER: ci-recovery-pepper-not-for-production
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
+          pnpm db:seed

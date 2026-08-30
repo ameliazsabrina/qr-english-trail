@@ -12,4 +12,16 @@ describe("content validation", () => {
     copy[1]!.questions[0]!.id = copy[0]!.questions[0]!.id;
     expect(() => validateContent(copy)).toThrow(/Duplicate question ID/);
   });
+
+  it("requires an Indonesian translation for every question", () => {
+    const copy = structuredClone(learningPoints);
+    copy[0]!.questions[0]!.translation = "";
+    expect(() => validateContent(copy)).toThrow();
+  });
+
+  it("requires five active questions for every active point", () => {
+    const copy = structuredClone(learningPoints);
+    copy[0]!.questions[4]!.active = false;
+    expect(() => validateContent(copy)).toThrow(/at least five active questions/);
+  });
 });

@@ -1,18 +1,13 @@
 import { createApp } from "./app.js";
 import { readEnv } from "./config/env.js";
-import { connectDatabase, disconnectDatabase } from "./repositories/mongo.js";
+import { assertMigrationsCurrent, openDatabase } from "./db/client.js";
 
 const env = readEnv();
-const app = await createApp(env);
-
-if (env.MONGODB_URI) {
-  await connectDatabase(env.MONGODB_URI);
-  app.log.info("Connected to MongoDB");
-} else {
-  app.log.warn("MONGODB_URI is not set; persistence routes are not enabled yet");
-}
-
-app.addHook("onClose", disconnectDatabase);
+const database = openDatabase(env.SQLITE_PATH, false);
+assertMigrationsCurrent(database.sqlite);
+const app = await createApp(env, Math.random, database);
+app.log.info({ path: env.SQLITE_PATH }, "SQLite database ready");
+app.addHook("onClose", async () => database.close());
 
 try {
   await app.listen({ port: env.PORT, host: env.HOST });
@@ -20,4 +15,3 @@ try {
   app.log.error(error);
   process.exit(1);
 }
-

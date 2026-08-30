@@ -10,6 +10,7 @@ const questionSchema = z.object({
   id: z.string().min(1),
   type: z.enum(["multiple-choice", "fill-blank", "image-choice", "audio-choice"]),
   prompt: z.string().min(1),
+  translation: z.string().min(1),
   instructions: z.string().min(1).optional(),
   options: z.array(z.object({ id: z.string().min(1), label: z.string().min(1), image: mediaSchema.optional() })).optional(),
   correctOptionId: z.string().min(1).optional(),
@@ -52,4 +53,3 @@ export const learningPointSchema = z.object({
   questions: z.array(questionSchema),
   contentVersion: z.string().min(1)
 });
-

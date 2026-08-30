@@ -1,46 +1,50 @@
 # Bonjotan English Trail
 
-Mobile-first QR learning trail for children exploring Bonjotan. The repository follows the architecture in [PRD.md](./PRD.md): a React client, a server-authoritative API, MongoDB persistence, and version-controlled learning content.
-
-## What is scaffolded
-
-- Mobile-first React/Vite trail UI and stable `/point/:slug` QR routes.
-- Fastify API with health, point-list, and public point-detail endpoints.
-- Ten active learning points with five multiple-choice questions each.
-- Content validation for IDs, slugs, answer configuration, and minimum pool size.
-- MongoDB connection and required index bootstrap (enabled when `MONGODB_URI` is set).
-- Shared TypeScript contracts and safe local-storage helpers.
-- Initial API and content tests.
-
-Player creation/recovery, attempt issuance/submission, atomic scoring, progress, and the live leaderboard are intentionally the next vertical slice. The current API never exposes the question bank or answer keys through its public point endpoints.
+Mobile-first QR learning trail for children exploring Bonjotan. The React client stores only an opaque session token; the Fastify API and SQLite database are authoritative for identity, attempts, scoring, progress, recovery, and rankings.
 
 ## Prerequisites
 
-- Node.js 22+
+- Node.js 24.2.x (run `nvm use` in this repository)
 - pnpm 10+
-- MongoDB for persistence work (the content scaffold runs without it)
+- A persistent writable directory for SQLite in production
 
-## Start locally
+## Local development
 
 ```bash
 cp .env.example .env
+nvm use
 pnpm install
+pnpm db:migrate
+pnpm db:seed
 pnpm dev
 ```
 
-Open <http://localhost:5173>. The web dev server proxies `/api` to <http://localhost:3001>.
+`better-sqlite3` is a native dependency. If you change Node versions, run `pnpm rebuild better-sqlite3` before running database commands.
 
-To connect MongoDB, export `MONGODB_URI` before starting the API. The example configuration uses `mongodb://localhost:27018/bonjotan`. Environment files are ignored by Git; never commit production secrets.
+Open <http://localhost:5173>. The web development server proxies `/api` to <http://localhost:3001>. The default database is `./data/bonjotan.sqlite`; set strong, distinct session and recovery peppers outside source control in production.
 
-## Seed MongoDB
-
-With a non-production `MONGODB_URI` in the root `.env` file or exported in your shell, populate the three persistence collections with deterministic demo data:
+## Database commands
 
 ```bash
-pnpm seed:mongo
+pnpm db:generate  # generate Drizzle migrations after a schema change
+pnpm db:migrate   # apply versioned SQLite migrations
+pnpm db:seed      # repeatable non-production demo data
+pnpm db:studio    # inspect local data with Drizzle Studio
 ```
 
-The command upserts three demo players and their matching quiz attempts and point completions, so it can be run repeatedly without duplicating records. It does not remove or modify other documents. The seed is blocked when `NODE_ENV=production`.
+Migrations are explicit deployment work and should run before the API starts. SQLite uses foreign keys, WAL, a 5-second busy timeout, and normal synchronous mode. Run exactly one API replica against a local database file.
+
+## Backup and restore
+
+Keep the database, `-wal`, and `-shm` files on a persistent volume. For an online backup, use SQLite's backup API or run `VACUUM INTO '/backups/bonjotan-YYYYMMDD.sqlite'` against the live database. Verify a backup with `PRAGMA integrity_check`, then test restoration by starting the same application version against a copy and checking `/api/health` and `/api/leaderboard`.
+
+The included online-backup command is:
+
+```bash
+pnpm db:backup -- /absolute/path/bonjotan-backup.sqlite
+```
+
+Before restoring, stop the API, retain the current database as a rollback copy, place the verified restored file at `SQLITE_PATH`, apply migrations, and restart. Monitor database-open errors, busy timeouts, scoring transaction failures, disk space, and recovery rate-limit events; never log bearer tokens, recovery codes, or their hashes.
 
 ## Quality commands
 
@@ -55,16 +59,9 @@ pnpm build
 
 ```text
 apps/web                 React mobile web application
-apps/api                 Fastify API and MongoDB bootstrap
-packages/content         Versioned lessons, questions, schema, validation
-packages/shared-types    Contracts shared between web, API, and content
+apps/api                 Fastify API, Drizzle schema, and SQLite migrations
+packages/content         Versioned lessons, questions, and validation
+packages/shared-types    Contracts shared by the web, API, and content
 ```
 
-## Content workflow
-
-1. Edit `packages/content/src/points.ts`.
-2. Keep point, slug, and question IDs stable after QR publication.
-3. Increase `contentVersion` when published lesson or question content changes.
-4. Run `pnpm validate:content` and request educator review before publishing.
-
-The current text is seed content for product development, not final educator-approved copy.
+Each eligible first completion asks five questions, awards 100 points per correct answer and a 20-point completion bonus, and can contribute at most 520 points. Replays are Practice Mode and award zero. Across ten points, the maximum score is 5,200.

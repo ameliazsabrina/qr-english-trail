@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup",
+    "build": "tsup && cp -R src/db/migrations dist/migrations",
     "start": "node dist/server.js",
-    "seed:mongo": "node --env-file-if-exists=../../.env --import tsx src/scripts/seed-mongo.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=../../.env --import tsx src/scripts/migrate-sqlite.ts",
+    "db:seed": "node --env-file-if-exists=../../.env --import tsx src/scripts/seed-sqlite.ts",
+    "db:backup": "node --env-file-if-exists=../../.env --import tsx src/scripts/backup-sqlite.ts",
+    "db:studio": "drizzle-kit studio",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
@@ -16,11 +20,14 @@
     "@bonjotan/shared-types": "workspace:*",
     "@fastify/cors": "^11.0.0",
     "fastify": "^5.2.1",
-    "mongodb": "^6.14.2",
+    "better-sqlite3": "^12.2.0",
+    "drizzle-orm": "^0.44.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.13.10",
+    "drizzle-kit": "^0.31.4",
     "tsx": "^4.19.3",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",

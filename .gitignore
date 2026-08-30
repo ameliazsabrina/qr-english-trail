@@ -6,5 +6,9 @@ dist/
 coverage/
 playwright-report/
 test-results/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 .DS_Store
 /docs

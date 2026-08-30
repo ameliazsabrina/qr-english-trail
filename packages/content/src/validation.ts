@@ -19,8 +19,8 @@ export function validateContent(points: LearningPoint[]): void {
     numbers.add(point.pointNumber);
 
     const activeQuestions = point.questions.filter(({ active }) => active);
-    if (point.status === "active" && activeQuestions.length < 2) {
-      throw new Error(`Active point ${point.id} needs at least two active questions`);
+    if (point.status === "active" && activeQuestions.length < 5) {
+      throw new Error(`Active point ${point.id} needs at least five active questions`);
     }
     for (const question of point.questions) {
       if (questionIds.has(question.id)) throw new Error(`Duplicate question ID: ${question.id}`);
@@ -28,4 +28,3 @@ export function validateContent(points: LearningPoint[]): void {
     }
   }
 }
-

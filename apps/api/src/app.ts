@@ -1,33 +1,37 @@
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import type { AppEnv } from "./config/env.js";
-import { checkQuizAnswer, getPublicPoint, getQuizQuestions, listActivePoints } from "./services/content.js";
+import { openDatabase, type Database } from "./db/client.js";
+import { registerAttemptRoutes } from "./routes/attempts.js";
+import { registerLeaderboardRoutes } from "./routes/leaderboard.js";
+import { registerPlayerRoutes } from "./routes/players.js";
+import { registerProgressRoutes } from "./routes/progress.js";
+import type { AuthSecrets } from "./services/auth.js";
+import { getPointQuiz, getPublicPoint, listActivePoints, type RandomSource } from "./services/content.js";
 
-export async function createApp(env: Pick<AppEnv, "WEB_ORIGIN">) {
+type AppConfig = Pick<AppEnv, "WEB_ORIGIN"> & Partial<Pick<AppEnv, "SESSION_TOKEN_PEPPER" | "RECOVERY_CODE_PEPPER" | "SESSION_LIFETIME_DAYS">>;
+
+export async function createApp(env: AppConfig, random: RandomSource = Math.random, providedDatabase?: Database) {
   const app = Fastify({ logger: process.env.NODE_ENV !== "test" });
+  const database = providedDatabase ?? openDatabase(":memory:");
+  const secrets: AuthSecrets = {
+    sessionPepper: env.SESSION_TOKEN_PEPPER ?? "development-session-pepper",
+    recoveryPepper: env.RECOVERY_CODE_PEPPER ?? "development-recovery-pepper",
+    sessionLifetimeDays: env.SESSION_LIFETIME_DAYS ?? 90,
+  };
   await app.register(cors, { origin: env.WEB_ORIGIN });
 
-  app.get("/api/health", async () => ({ status: "ok" as const }));
+  app.get("/api/health", async () => {
+    database.sqlite.prepare("SELECT 1").get();
+    return { status: "ok" as const };
+  });
+
+  registerPlayerRoutes(app, database, secrets);
+  registerAttemptRoutes(app, database, secrets, random);
+  registerProgressRoutes(app, database, secrets);
+  registerLeaderboardRoutes(app, database, secrets);
 
   app.get("/api/points", async () => ({ points: listActivePoints() }));
-
-  app.get("/api/quiz", async () => ({ questions: getQuizQuestions() }));
-
-  app.post<{ Body: { questionId?: string; optionId?: string } }>("/api/quiz/check", async (request, reply) => {
-    const { questionId, optionId } = request.body ?? {};
-    if (!questionId || !optionId) {
-      return reply.status(400).send({
-        error: { code: "INVALID_ANSWER", message: "Choose an answer before continuing." }
-      });
-    }
-    const result = checkQuizAnswer(questionId, optionId);
-    if (!result) {
-      return reply.status(404).send({
-        error: { code: "QUESTION_NOT_FOUND", message: "That question is no longer available." }
-      });
-    }
-    return { result };
-  });
 
   app.get<{ Params: { slug: string } }>("/api/points/:slug", async (request, reply) => {
     const point = getPublicPoint(request.params.slug);
@@ -39,9 +43,22 @@ export async function createApp(env: Pick<AppEnv, "WEB_ORIGIN">) {
     return { point };
   });
 
+  app.get<{ Params: { slug: string } }>("/api/points/:slug/quiz", async (request, reply) => {
+    const questions = getPointQuiz(request.params.slug, random);
+    if (!questions) {
+      return reply.status(404).send({
+        error: { code: "POINT_NOT_FOUND", message: "We could not find that English Point." }
+      });
+    }
+    reply.header("Cache-Control", "no-store");
+    return { questions };
+  });
+
   app.setNotFoundHandler((_request, reply) => reply.status(404).send({
     error: { code: "NOT_FOUND", message: "That page does not exist." }
   }));
+
+  if (!providedDatabase) app.addHook("onClose", async () => database.close());
 
   return app;
 }

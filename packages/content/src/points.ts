@@ -1,21 +1,29 @@
 import type { LearningPoint, Question } from "@bonjotan/shared-types";
 
-type QuestionSeed = readonly [prompt: string, correct: string, wrongA: string, wrongB: string, explanation: string];
+type QuestionSeed = readonly [
+  prompt: string,
+  correct: string,
+  wrongA: string,
+  wrongB: string,
+  explanation: string,
+  translation: string,
+];
 
 function questions(prefix: string, seeds: readonly QuestionSeed[]): Question[] {
-  return seeds.map(([prompt, correct, wrongA, wrongB, explanation], index) => ({
+  return seeds.map(([prompt, correct, wrongA, wrongB, explanation, translation], index) => ({
     id: `${prefix}-q${index + 1}`,
     type: "multiple-choice",
     prompt,
+    translation,
     options: [
       { id: "a", label: correct },
       { id: "b", label: wrongA },
-      { id: "c", label: wrongB }
+      { id: "c", label: wrongB },
     ],
     correctOptionId: "a",
     explanation,
     active: true,
-    difficulty: index < 3 ? "easy" : "medium"
+    difficulty: index < 3 ? "easy" : "medium",
   }));
 }
 
@@ -26,7 +34,7 @@ function point(
   topic: string,
   body: string,
   examples: Array<{ english: string; translation: string }>,
-  seeds: readonly QuestionSeed[]
+  seeds: readonly QuestionSeed[],
 ): LearningPoint {
   return {
     id: `point-${String(pointNumber).padStart(2, "0")}`,
@@ -37,110 +45,566 @@ function point(
     status: "active",
     lesson: { heading: title, body, examples },
     questions: questions(`p${String(pointNumber).padStart(2, "0")}`, seeds),
-    contentVersion: "2026.08.1"
+    contentVersion: "2026.08.1",
   };
 }
 
 export const learningPoints: LearningPoint[] = [
-  point(1, "greetings", "Hello, Bonjotan!", "Greetings", "Greetings help us start a friendly conversation. Use hello at any time and good morning before noon.", [
-    { english: "Hello!", translation: "Halo!" },
-    { english: "Good morning!", translation: "Selamat pagi!" }
-  ], [
-    ["What can you say when you meet someone?", "Hello!", "Goodbye!", "Sorry!", "Hello is a friendly greeting."],
-    ["Which greeting is best before noon?", "Good morning!", "Good night!", "See you!", "We use good morning earlier in the day."],
-    ["Someone says, ‘Hello!’ What can you reply?", "Hello!", "No!", "Tomorrow!", "You can greet them back with hello."],
-    ["Which phrase means ‘Selamat sore’?", "Good afternoon!", "Good morning!", "Good night!", "Good afternoon is used later in the day."],
-    ["What do you say when leaving?", "Goodbye!", "Welcome!", "Please!", "Goodbye is used when you leave."]
-  ]),
-  point(2, "introductions", "Meet a New Friend", "Introductions", "Use My name is… to introduce yourself, and ask What is your name? to learn another person's name.", [
-    { english: "My name is Rara.", translation: "Nama saya Rara." },
-    { english: "Nice to meet you.", translation: "Senang bertemu denganmu." }
-  ], [
-    ["How do you introduce yourself?", "My name is Dito.", "Your name is Dito.", "Goodbye, Dito.", "Use My name is… for your own name."],
-    ["How do you ask someone’s name?", "What is your name?", "Where is your name?", "How old is a name?", "What is your name? asks for a name."],
-    ["What can you say after an introduction?", "Nice to meet you.", "Turn left.", "I am hungry.", "Nice to meet you is a friendly response."],
-    ["Complete: ‘I ___ Sari.’", "am", "is", "are", "Use am with I."],
-    ["Which answer fits ‘What is your name?’", "I’m Bima.", "I’m fine.", "It is blue.", "I’m Bima answers with a name."]
-  ]),
-  point(3, "directions", "Which Way?", "Directions", "Direction words help visitors find their way. Left and right show direction; straight ahead means keep moving forward.", [
-    { english: "Turn left.", translation: "Belok kiri." },
-    { english: "Go straight ahead.", translation: "Jalan terus." }
-  ], [
-    ["Which phrase means ‘Belok kanan’?", "Turn right.", "Turn left.", "Sit down.", "Turn right means belok kanan."],
-    ["What does ‘go straight ahead’ mean?", "Keep moving forward.", "Walk backward.", "Stop here.", "Straight ahead tells you to continue forward."],
-    ["The shop is beside the park. Which word fits?", "next to", "under", "inside", "Next to means beside."],
-    ["How can you ask for help finding a place?", "Where is the park?", "What is the park?", "Who is the park?", "Where asks about a location."],
-    ["Opposite of left is…", "right", "straight", "near", "Right is the opposite direction from left."]
-  ]),
-  point(4, "places", "Places Around Us", "Places", "We use place words to describe our neighborhood, such as park, school, market, and library.", [
-    { english: "This is the market.", translation: "Ini pasar." },
-    { english: "The park is nearby.", translation: "Taman itu dekat." }
-  ], [
-    ["Where can you borrow books?", "library", "market", "playground", "A library has books to read or borrow."],
-    ["Where do students learn?", "school", "bridge", "shop", "Students learn at school."],
-    ["Where can people buy vegetables?", "market", "library", "park", "A market is a place to buy food and goods."],
-    ["Which place often has swings?", "playground", "clinic", "road", "A playground is made for play."],
-    ["Complete: ‘The park is ___ the school.’", "near", "drink", "happy", "Near describes a short distance between places."]
-  ]),
-  point(5, "everyday-objects", "Things We Use", "Everyday objects", "English names for familiar objects make daily conversations easier. Look around and name what you see.", [
-    { english: "This is a bottle.", translation: "Ini botol." },
-    { english: "That is a chair.", translation: "Itu kursi." }
-  ], [
-    ["Which object holds drinking water?", "bottle", "chair", "book", "A bottle can hold water."],
-    ["Which object do you sit on?", "chair", "pencil", "door", "You sit on a chair."],
-    ["Which object do you use for writing?", "pencil", "cup", "shoe", "A pencil is used for writing."],
-    ["Complete: ‘This ___ a book.’", "is", "are", "am", "Use is with this."],
-    ["What is the plural of ‘bag’?", "bags", "bages", "bag", "Most plurals add s: bag becomes bags."]
-  ]),
-  point(6, "daily-activities", "My Day", "Daily activities", "Simple verbs describe things we do every day: wake up, eat, study, play, and sleep.", [
-    { english: "I study in the morning.", translation: "Saya belajar pada pagi hari." },
-    { english: "We play after school.", translation: "Kami bermain setelah sekolah." }
-  ], [
-    ["What do you usually do after waking up?", "get out of bed", "say good night", "close the school", "You get out of bed after waking up."],
-    ["Which verb means ‘belajar’?", "study", "sleep", "drink", "Study means belajar."],
-    ["Complete: ‘We ___ football.’", "play", "plays", "playing", "Use the base verb play with we."],
-    ["Which activity happens at night?", "sleep", "eat breakfast", "go to school", "People usually sleep at night."],
-    ["What meal do we often eat in the morning?", "breakfast", "dinner", "snack", "Breakfast is the morning meal."]
-  ]),
-  point(7, "polite-words", "Kind Words", "Polite words", "Polite words show respect and kindness. Say please when asking, thank you when receiving, and sorry after a mistake.", [
-    { english: "Please help me.", translation: "Tolong bantu saya." },
-    { english: "Thank you!", translation: "Terima kasih!" }
-  ], [
-    ["What polite word belongs in a request?", "please", "never", "quickly", "Please makes a request polite."],
-    ["Someone helps you. What do you say?", "Thank you.", "Go away.", "Turn left.", "Thank you shows appreciation."],
-    ["You bump into someone. What should you say?", "Sorry.", "Welcome.", "Good morning.", "Sorry is used after a mistake or accident."],
-    ["Someone says ‘Thank you.’ How can you reply?", "You’re welcome.", "I’m sorry.", "Excuse you.", "You’re welcome is a polite reply to thanks."],
-    ["How can you politely get attention?", "Excuse me.", "Be quiet.", "No thanks.", "Excuse me politely gets someone’s attention."]
-  ]),
-  point(8, "food-and-drinks", "Tasty Words", "Food and drinks", "Use food and drink words to say what you like, want, or need.", [
-    { english: "I like rice.", translation: "Saya suka nasi." },
-    { english: "May I have some water?", translation: "Boleh saya minta air?" }
-  ], [
-    ["Which one is a drink?", "water", "rice", "banana", "Water is something we drink."],
-    ["Complete: ‘I ___ noodles.’", "like", "likes", "am", "Use like with I."],
-    ["How can you ask for water politely?", "May I have some water?", "Water now!", "Where water go?", "May I have… is a polite request."],
-    ["Which food is a fruit?", "banana", "rice", "bread", "A banana is a fruit."],
-    ["Opposite of hungry is…", "full", "thirsty", "tired", "Full means you have eaten enough."]
-  ]),
-  point(9, "local-culture", "Our Culture", "Local culture", "We can share local culture with visitors using simple, welcoming English and respectful explanations.", [
-    { english: "Welcome to Bonjotan.", translation: "Selamat datang di Bonjotan." },
-    { english: "This is a local tradition.", translation: "Ini tradisi setempat." }
-  ], [
-    ["How do you greet a visitor to Bonjotan?", "Welcome to Bonjotan!", "Leave Bonjotan!", "Where is Bonjotan?", "Welcome is a warm greeting for visitors."],
-    ["Which word means ‘tradisi’?", "tradition", "direction", "conversation", "Tradition means tradisi."],
-    ["Complete: ‘This is ___ local food.’", "a", "an", "are", "Use a before local food."],
-    ["How can you invite someone to look?", "Please have a look.", "Do not see.", "Look yesterday.", "Please have a look is a polite invitation."],
-    ["What word describes something from this area?", "local", "distant", "late", "Local means connected to this area."]
-  ]),
-  point(10, "friendly-visitors", "Be a Friendly Guide", "Friendly interaction", "A friendly guide listens, offers help, and uses short clear sentences with visitors.", [
-    { english: "Can I help you?", translation: "Bisa saya bantu?" },
-    { english: "Have a nice day!", translation: "Semoga harimu menyenangkan!" }
-  ], [
-    ["A visitor looks lost. What can you say?", "Can I help you?", "Do not ask me.", "I am a road.", "Can I help you? is a friendly offer."],
-    ["How can you check understanding?", "Do you understand?", "Are you a place?", "Where understand?", "This question politely checks understanding."],
-    ["You did not hear. What can you say?", "Could you repeat that, please?", "Never speak.", "Repeat yesterday.", "This politely asks someone to say it again."],
-    ["What is a friendly goodbye?", "Have a nice day!", "Close the day!", "No more day!", "Have a nice day is a warm farewell."],
-    ["Which sentence offers directions?", "I can show you the way.", "I can eat the way.", "The way is hungry.", "Show you the way means help someone find a place."]
-  ])
-];
+  point(
+    1,
+    "greetings",
+    "Hello, Bonjotan!",
+    "Greetings",
+    "Imagine meeting a new friend or visitor while walking around Bonjotan. Simple greetings can help you start a friendly conversation.",
+    [
+      { english: "Hello!", translation: "Halo!" },
+      { english: "Good morning!", translation: "Selamat pagi!" },
+    ],
+    [
+      [
+        "You meet a visitor in Bonjotan. What can you say first?",
+        "Hello!",
+        "Goodbye!",
+        "Sorry!",
+        "Hello is a friendly way to start a conversation.",
+        "Kamu bertemu seorang pengunjung di Bonjotan. Apa yang bisa kamu ucapkan pertama kali?",
+      ],
+      [
+        "You meet a visitor during a morning activity in Bonjotan. What should you say?",
+        "Good morning!",
+        "Good night!",
+        "See you tomorrow!",
+        "Good morning is used before noon.",
+        "Kamu bertemu seorang pengunjung saat kegiatan pagi di Bonjotan. Apa yang sebaiknya kamu ucapkan?",
+      ],
+      [
+        "A visitor smiles and says, 'Hello!' to you. What can you reply?",
+        "Hello!",
+        "No!",
+        "Tomorrow!",
+        "You can greet them back by saying hello.",
+        "Seorang pengunjung tersenyum dan berkata, 'Hello!' kepadamu. Apa yang bisa kamu jawab?",
+      ],
+      [
+        "You meet someone in Bonjotan at 3 PM. Which greeting fits best?",
+        "Good afternoon!",
+        "Good morning!",
+        "Good night!",
+        "Good afternoon is commonly used later in the day.",
+        "Kamu bertemu seseorang di Bonjotan pukul 3 sore. Salam mana yang paling tepat?",
+      ],
+      [
+        "After talking with a visitor, you need to go home. What can you say?",
+        "Goodbye!",
+        "Welcome!",
+        "Please!",
+        "Goodbye is used when ending a conversation.",
+        "Setelah berbicara dengan seorang pengunjung, kamu harus pulang. Apa yang bisa kamu ucapkan?",
+      ],
+    ],
+  ),
 
+  point(
+    2,
+    "introductions",
+    "Meet Someone in Bonjotan",
+    "Introductions",
+    "During Kampung Inggris activities, you may meet new friends or visitors. Learn how to introduce yourself using simple English.",
+    [
+      { english: "My name is Rara.", translation: "Nama saya Rara." },
+      {
+        english: "I live in Bonjotan.",
+        translation: "Saya tinggal di Bonjotan.",
+      },
+    ],
+    [
+      [
+        "A new visitor comes to Bonjotan. How can you introduce yourself?",
+        "My name is Dito.",
+        "Your name is Dito.",
+        "Goodbye, Dito.",
+        "Use 'My name is...' when introducing yourself.",
+        "Seorang pengunjung baru datang ke Bonjotan. Bagaimana cara memperkenalkan dirimu?",
+      ],
+      [
+        "You want to know a visitor's name. What should you ask?",
+        "What is your name?",
+        "Where is your name?",
+        "How old is your name?",
+        "What is your name? is used to ask someone's name.",
+        "Kamu ingin mengetahui nama seorang pengunjung. Apa yang harus kamu tanyakan?",
+      ],
+      [
+        "After you and a visitor introduce yourselves, what can you say?",
+        "Nice to meet you.",
+        "Turn left.",
+        "I am hungry.",
+        "Nice to meet you is a friendly response after an introduction.",
+        "Setelah kamu dan seorang pengunjung saling memperkenalkan diri, apa yang bisa kamu ucapkan?",
+      ],
+      [
+        "Complete the sentence: 'I ___ from Bonjotan.'",
+        "am",
+        "is",
+        "are",
+        "Use am with I.",
+        "Lengkapi kalimat ini: 'I ___ from Bonjotan.'",
+      ],
+      [
+        "A visitor asks, 'Where do you live?' Which answer fits best?",
+        "I live in Bonjotan.",
+        "My name is Bonjotan.",
+        "I am fine.",
+        "I live in Bonjotan answers a question about where you live.",
+        "Seorang pengunjung bertanya, 'Where do you live?' Jawaban mana yang paling tepat?",
+      ],
+    ],
+  ),
+
+  point(
+    3,
+    "directions",
+    "Help Them Find the Way",
+    "Directions",
+    "Visitors may need help finding their way around Bonjotan. Simple direction words can help you guide them.",
+    [
+      { english: "Turn left.", translation: "Belok kiri." },
+      { english: "Go straight ahead.", translation: "Jalan terus." },
+    ],
+    [
+      [
+        "A visitor needs to turn right at the next road. What should you say?",
+        "Turn right.",
+        "Turn left.",
+        "Sit down.",
+        "Turn right means belok kanan.",
+        "Seorang pengunjung harus berbelok ke kanan di jalan berikutnya. Apa yang harus kamu ucapkan?",
+      ],
+      [
+        "You tell a visitor, 'Go straight ahead.' What should they do?",
+        "Keep moving forward.",
+        "Walk backward.",
+        "Stop immediately.",
+        "Go straight ahead means continue moving forward.",
+        "Kamu berkata kepada seorang pengunjung, 'Go straight ahead.' Apa yang harus mereka lakukan?",
+      ],
+      [
+        "The warung is beside another building. Which phrase can describe its location?",
+        "next to",
+        "under",
+        "inside",
+        "Next to means beside something.",
+        "Warung berada di samping bangunan lain. Frasa mana yang dapat menjelaskan lokasinya?",
+      ],
+      [
+        "A visitor wants to find a place in Bonjotan. Which question could they ask?",
+        "Where is this place?",
+        "What is this place going?",
+        "Who is the road?",
+        "Where is used to ask about a location.",
+        "Seorang pengunjung ingin menemukan suatu tempat di Bonjotan. Pertanyaan mana yang bisa mereka ajukan?",
+      ],
+      [
+        "Your friend says 'turn left,' but the correct direction is the opposite. What should you say?",
+        "Turn right.",
+        "Go near.",
+        "Sit straight.",
+        "Right is the opposite direction from left.",
+        "Temanmu berkata 'turn left', tetapi arah yang benar adalah sebaliknya. Apa yang harus kamu ucapkan?",
+      ],
+    ],
+  ),
+
+  point(
+    4,
+    "places",
+    "Around Bonjotan",
+    "Places",
+    "Learn English words that can help you talk about familiar places around Bonjotan.",
+    [
+      { english: "This is a shop.", translation: "Ini warung/toko." },
+      { english: "The field is nearby.", translation: "Lapangan itu dekat." },
+    ],
+    [
+      [
+        "You want to buy a drink at a warung in Bonjotan. Which English word fits best?",
+        "shop",
+        "school",
+        "road",
+        "Shop can be used for a place where people buy things.",
+        "Kamu ingin membeli minuman di sebuah warung di Bonjotan. Kata bahasa Inggris mana yang paling tepat?",
+      ],
+      [
+        "Children are studying in class. Where are they?",
+        "school",
+        "road",
+        "field",
+        "Students usually learn at school.",
+        "Anak-anak sedang belajar di kelas. Di mana mereka berada?",
+      ],
+      [
+        "Children are playing football together. Which place fits best?",
+        "field",
+        "shop",
+        "house",
+        "A field is a common place for outdoor activities.",
+        "Anak-anak sedang bermain sepak bola bersama. Tempat mana yang paling tepat?",
+      ],
+      [
+        "A visitor asks about a place that is not far away. Which word can you use?",
+        "nearby",
+        "hungry",
+        "yesterday",
+        "Nearby means close to your current location.",
+        "Seorang pengunjung bertanya tentang tempat yang tidak jauh. Kata mana yang bisa kamu gunakan?",
+      ],
+      [
+        "Complete: 'The shop is ___ here.'",
+        "near",
+        "drink",
+        "happy",
+        "Near describes a short distance.",
+        "Lengkapi: 'The shop is ___ here.'",
+      ],
+    ],
+  ),
+
+  point(
+    5,
+    "everyday-objects",
+    "Look Around Bonjotan",
+    "Everyday Objects",
+    "Look around you. Many objects you see every day can become simple English vocabulary.",
+    [
+      { english: "This is a bottle.", translation: "Ini botol." },
+      { english: "That is a chair.", translation: "Itu kursi." },
+    ],
+    [
+      [
+        "You bring drinking water during a Kampung Inggris activity. What can hold the water?",
+        "bottle",
+        "chair",
+        "book",
+        "A bottle can hold drinking water.",
+        "Kamu membawa air minum saat kegiatan Kampung Inggris. Benda apa yang dapat menampung air?",
+      ],
+      [
+        "You want to sit while talking with your friends. Which object do you need?",
+        "chair",
+        "pencil",
+        "door",
+        "You can sit on a chair.",
+        "Kamu ingin duduk sambil berbicara dengan teman-temanmu. Benda apa yang kamu perlukan?",
+      ],
+      [
+        "You want to write a new English word. Which object can you use?",
+        "pencil",
+        "cup",
+        "shoe",
+        "A pencil can be used for writing.",
+        "Kamu ingin menulis kosakata bahasa Inggris baru. Benda apa yang bisa kamu gunakan?",
+      ],
+      [
+        "You point to a book and say: 'This ___ a book.'",
+        "is",
+        "are",
+        "am",
+        "Use is with this.",
+        "Kamu menunjuk sebuah buku dan berkata: 'This ___ a book.'",
+      ],
+      [
+        "You see three bags belonging to your friends. What is the plural of 'bag'?",
+        "bags",
+        "bages",
+        "bag",
+        "Most regular plurals add s.",
+        "Kamu melihat tiga tas milik teman-temanmu. Apa bentuk jamak dari 'bag'?",
+      ],
+    ],
+  ),
+
+  point(
+    6,
+    "daily-activities",
+    "A Day in Bonjotan",
+    "Daily Activities",
+    "Practice simple English by talking about activities you may do every day in Bonjotan.",
+    [
+      {
+        english: "I study in the morning.",
+        translation: "Saya belajar pada pagi hari.",
+      },
+      {
+        english: "We play after school.",
+        translation: "Kami bermain setelah sekolah.",
+      },
+    ],
+    [
+      [
+        "It is morning and you are getting ready for school. What activity might you do?",
+        "eat breakfast",
+        "say good night",
+        "go to sleep",
+        "Breakfast is commonly eaten in the morning.",
+        "Hari masih pagi dan kamu sedang bersiap ke sekolah. Kegiatan apa yang mungkin kamu lakukan?",
+      ],
+      [
+        "You are learning English during a Kampung Inggris activity. Which verb fits?",
+        "study",
+        "sleep",
+        "hide",
+        "Study means belajar.",
+        "Kamu sedang belajar bahasa Inggris dalam kegiatan Kampung Inggris. Kata kerja mana yang tepat?",
+      ],
+      [
+        "You and your friends play football in Bonjotan. Complete: 'We ___ football.'",
+        "play",
+        "plays",
+        "playing",
+        "Use the base verb play with we.",
+        "Kamu dan teman-temanmu bermain sepak bola di Bonjotan. Lengkapi: 'We ___ football.'",
+      ],
+      [
+        "It is late at night after a busy day. Which activity usually comes next?",
+        "sleep",
+        "go to school",
+        "eat breakfast",
+        "People normally sleep at night.",
+        "Hari sudah larut malam setelah seharian beraktivitas. Kegiatan apa yang biasanya dilakukan selanjutnya?",
+      ],
+      [
+        "You meet your friend after school. Which sentence can describe your activity?",
+        "We play after school.",
+        "We sleep at school.",
+        "We breakfast at night.",
+        "We play after school correctly describes the activity.",
+        "Kamu bertemu temanmu setelah sekolah. Kalimat mana yang dapat menggambarkan kegiatan kalian?",
+      ],
+    ],
+  ),
+
+  point(
+    7,
+    "polite-words",
+    "Friendly Bonjotan",
+    "Polite Words",
+    "Polite words help us communicate kindly with friends, neighbors, and visitors who come to Bonjotan.",
+    [
+      { english: "Please help me.", translation: "Tolong bantu saya." },
+      { english: "Thank you!", translation: "Terima kasih!" },
+    ],
+    [
+      [
+        "You ask a visitor to wait for a moment. Which word can make your request more polite?",
+        "please",
+        "never",
+        "quickly",
+        "Please makes a request more polite.",
+        "Kamu meminta seorang pengunjung menunggu sebentar. Kata mana yang membuat permintaanmu lebih sopan?",
+      ],
+      [
+        "A neighbor helps you during an activity. What should you say?",
+        "Thank you.",
+        "Go away.",
+        "Turn left.",
+        "Thank you shows appreciation.",
+        "Seorang tetangga membantumu saat kegiatan. Apa yang sebaiknya kamu ucapkan?",
+      ],
+      [
+        "While playing, you accidentally bump into someone. What should you say?",
+        "Sorry.",
+        "Welcome.",
+        "Good morning.",
+        "Sorry is appropriate after an accident or mistake.",
+        "Saat bermain, kamu tidak sengaja menabrak seseorang. Apa yang sebaiknya kamu ucapkan?",
+      ],
+      [
+        "A visitor says, 'Thank you for helping me.' What can you reply?",
+        "You're welcome.",
+        "I'm hungry.",
+        "Turn right.",
+        "You're welcome is a polite response to thanks.",
+        "Seorang pengunjung berkata, 'Thank you for helping me.' Apa yang bisa kamu jawab?",
+      ],
+      [
+        "You want to ask a foreign visitor something. How can you politely get their attention?",
+        "Excuse me.",
+        "Hey, you!",
+        "Go away.",
+        "Excuse me is a polite way to get someone's attention.",
+        "Kamu ingin bertanya kepada pengunjung asing. Bagaimana cara meminta perhatiannya dengan sopan?",
+      ],
+    ],
+  ),
+
+  point(
+    8,
+    "food-and-drinks",
+    "At a Bonjotan Warung",
+    "Food and Drinks",
+    "Imagine buying food or drinks at a warung in Bonjotan. Simple English phrases can help you talk about what you like or want.",
+    [
+      { english: "I like rice.", translation: "Saya suka nasi." },
+      {
+        english: "May I have some water?",
+        translation: "Boleh saya minta air?",
+      },
+    ],
+    [
+      [
+        "You feel thirsty after walking around Bonjotan. Which one can you drink?",
+        "water",
+        "rice",
+        "bread",
+        "Water is something we drink.",
+        "Kamu merasa haus setelah berjalan-jalan di Bonjotan. Mana yang bisa kamu minum?",
+      ],
+      [
+        "You tell your new friend about a food you enjoy. Complete: 'I ___ noodles.'",
+        "like",
+        "likes",
+        "am",
+        "Use like with I.",
+        "Kamu bercerita kepada teman barumu tentang makanan yang kamu sukai. Lengkapi: 'I ___ noodles.'",
+      ],
+      [
+        "You want some water at a local warung. Which request sounds the most polite?",
+        "May I have some water?",
+        "Water now!",
+        "You water!",
+        "May I have...? is a polite way to ask for something.",
+        "Kamu ingin meminta air di warung setempat. Permintaan mana yang terdengar paling sopan?",
+      ],
+      [
+        "A visitor asks which of these is a fruit. Which answer is correct?",
+        "banana",
+        "rice",
+        "noodles",
+        "A banana is a fruit.",
+        "Seorang pengunjung bertanya mana yang termasuk buah. Jawaban mana yang benar?",
+      ],
+      [
+        "You have eaten enough food. Which word describes how you feel?",
+        "full",
+        "thirsty",
+        "lost",
+        "Full means you have eaten enough.",
+        "Kamu sudah makan cukup banyak. Kata mana yang menggambarkan perasaanmu?",
+      ],
+    ],
+  ),
+
+  point(
+    9,
+    "local-culture",
+    "Welcome to Bonjotan",
+    "Local Culture",
+    "English can help children introduce Bonjotan, local activities, and Indonesian culture to visitors in a simple and friendly way.",
+    [
+      {
+        english: "Welcome to Bonjotan.",
+        translation: "Selamat datang di Bonjotan.",
+      },
+      { english: "This is our village.", translation: "Ini dusun kami." },
+    ],
+    [
+      [
+        "A foreign visitor arrives in Bonjotan. What can you say?",
+        "Welcome to Bonjotan!",
+        "Leave Bonjotan!",
+        "Good night, Bonjotan!",
+        "Welcome to Bonjotan is a friendly greeting for a visitor.",
+        "Seorang pengunjung asing tiba di Bonjotan. Apa yang bisa kamu ucapkan?",
+      ],
+      [
+        "You want to tell a visitor that something belongs to the local area. Which word can you use?",
+        "local",
+        "tomorrow",
+        "far",
+        "Local means connected to the area.",
+        "Kamu ingin memberi tahu pengunjung bahwa sesuatu berasal dari daerah setempat. Kata mana yang bisa kamu gunakan?",
+      ],
+      [
+        "People in Bonjotan are doing gotong royong together. Which simple English phrase describes it best?",
+        "Working together.",
+        "Sleeping alone.",
+        "Going shopping.",
+        "Working together describes people helping one another.",
+        "Warga Bonjotan sedang melakukan gotong royong bersama. Frasa bahasa Inggris sederhana mana yang paling tepat?",
+      ],
+      [
+        "You want to show a visitor something interesting in Bonjotan. What can you say politely?",
+        "Please have a look.",
+        "Do not see.",
+        "Look yesterday.",
+        "Please have a look is a polite invitation.",
+        "Kamu ingin menunjukkan sesuatu yang menarik di Bonjotan kepada pengunjung. Apa yang bisa kamu ucapkan dengan sopan?",
+      ],
+      [
+        "A visitor asks, 'Where are we?' Which answer is appropriate?",
+        "We are in Bonjotan.",
+        "We are Bonjotan yesterday.",
+        "Bonjotan is hungry.",
+        "We are in Bonjotan correctly tells the visitor the location.",
+        "Seorang pengunjung bertanya, 'Where are we?' Jawaban mana yang tepat?",
+      ],
+    ],
+  ),
+
+  point(
+    10,
+    "friendly-visitors",
+    "Be a Bonjotan Buddy",
+    "Friendly Interaction",
+    "Imagine meeting a foreign visitor during Kampung Inggris. You do not need perfect English—short, clear, and friendly sentences can already help.",
+    [
+      { english: "Can I help you?", translation: "Bisa saya bantu?" },
+      {
+        english: "Welcome to Bonjotan!",
+        translation: "Selamat datang di Bonjotan!",
+      },
+    ],
+    [
+      [
+        "You see a foreign visitor looking confused on a road in Bonjotan. What can you say?",
+        "Can I help you?",
+        "Do not ask me.",
+        "I am a road.",
+        "Can I help you? is a friendly way to offer assistance.",
+        "Kamu melihat pengunjung asing yang tampak bingung di jalan Bonjotan. Apa yang bisa kamu ucapkan?",
+      ],
+      [
+        "A visitor speaks English, but you do not understand. What can you say?",
+        "Could you repeat that, please?",
+        "Never speak again.",
+        "English is wrong.",
+        "This politely asks the visitor to say it again.",
+        "Seorang pengunjung berbicara dalam bahasa Inggris, tetapi kamu tidak mengerti. Apa yang bisa kamu ucapkan?",
+      ],
+      [
+        "A visitor asks something and you are not sure you understood correctly. What can you ask?",
+        "Could you say that again?",
+        "Where is your language?",
+        "Why are you English?",
+        "Asking someone to repeat is okay when you do not understand.",
+        "Seorang pengunjung bertanya sesuatu dan kamu tidak yakin sudah memahaminya. Apa yang bisa kamu tanyakan?",
+      ],
+      [
+        "A visitor is leaving Bonjotan. Which sentence is a friendly goodbye?",
+        "Have a nice day!",
+        "Close the day!",
+        "No more day!",
+        "Have a nice day is a friendly farewell.",
+        "Seorang pengunjung akan meninggalkan Bonjotan. Kalimat mana yang merupakan salam perpisahan yang ramah?",
+      ],
+      [
+        "A visitor cannot find their destination. Which sentence offers help?",
+        "I can show you the way.",
+        "I can eat the way.",
+        "The road is sleeping.",
+        "I can show you the way means you are offering to guide them.",
+        "Seorang pengunjung tidak dapat menemukan tujuannya. Kalimat mana yang menawarkan bantuan?",
+      ],
+    ],
+  ),
+];
