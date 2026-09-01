@@ -88,7 +88,7 @@ export function LeaderboardPage() {
             <span className="min-w-0">
               <strong className="block truncate">{entry.nickname}</strong>
               <span className="text-sm text-muted">
-                {entry.completedPointCount}/10 points discovered
+                {entry.completedPointCount}/10 QR ditemukan.
                 {entry.isCurrentPlayer ? " · You" : ""}
               </span>
             </span>
