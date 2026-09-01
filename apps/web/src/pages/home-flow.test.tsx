@@ -50,7 +50,7 @@ describe("home session flow", () => {
     expect(screen.getByRole("heading", { name: /scan a village qr code/i })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Play" }));
     expect(screen.getByRole("heading", { name: "Create your player" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: /recover an existing player/i }).getAttribute("href")).toBe("/recover?returnTo=%2F");
+    expect(screen.getByRole("link", { name: /pulihkan dengan kodemu/i }).getAttribute("href")).toBe("/recover?returnTo=%2F");
   });
 
   it("shows the one-time recovery code after successful creation", async () => {

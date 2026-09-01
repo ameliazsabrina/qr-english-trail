@@ -87,7 +87,7 @@ describe("server-authoritative QR quiz flow", () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/point/greetings"]}><PointQuizFlow slug="greetings" /></MemoryRouter>);
 
-    expect(screen.getByRole("link", { name: /recover an existing player/i }).getAttribute("href")).toBe("/recover?returnTo=%2Fpoint%2Fgreetings");
+    expect(screen.getByRole("link", { name: /pulihkan dengan kodemu/i }).getAttribute("href")).toBe("/recover?returnTo=%2Fpoint%2Fgreetings");
     await user.type(screen.getByLabelText("Your name"), "Rara");
     await user.click(screen.getByRole("button", { name: "Start Playing" }));
     expect(await screen.findByRole("heading", { name: /simpan kode ini yaa/i })).toBeTruthy();
