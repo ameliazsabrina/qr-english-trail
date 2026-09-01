@@ -100,7 +100,7 @@ export function LeaderboardPage() {
         className="mx-auto mt-6 flex min-h-12 w-fit items-center rounded-xl bg-ink px-5 font-black text-white no-underline focus-visible:outline-3 focus-visible:outline-offset-3"
         to="/"
       >
-        Explore the trail
+        Kembali ke beranda
       </Link>
     </section>
   );

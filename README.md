@@ -70,10 +70,30 @@ docker compose up -d
 docker compose ps
 ```
 
-By default the web service binds host port 80. Set `HTTP_PORT` in `.env` if a
-host-level reverse proxy already owns that port. Terminate TLS at that reverse
-proxy, and back up the `bonjotan-data` volume regularly. Only one API replica may
-write to this local SQLite database.
+The web service binds to `127.0.0.1:8081` by default so only a host-level reverse
+proxy such as Caddy can reach it. Terminate TLS at that reverse proxy, and back up
+the `bonjotan-data` volume regularly. Only one API replica may write to this local
+SQLite database.
+
+### Automatic production deployment
+
+After the verification and Docker build jobs pass on `main`, GitHub Actions uses
+SSH to fast-forward the VPS checkout and rebuild the Compose services. Configure
+these GitHub repository **Variables** under Settings → Secrets and variables →
+Actions:
+
+- `VPS_HOST` — VPS IP address or SSH hostname
+- `VPS_USER` — dedicated deployment user
+- `VPS_SSH_PORT` — SSH port, normally `22`
+- `VPS_APP_PATH` — absolute path to the repository on the VPS
+
+Configure these repository **Secrets**:
+
+- `VPS_SSH_PRIVATE_KEY` — private key authorized for the deployment user
+- `VPS_KNOWN_HOSTS` — pinned SSH host-key entry for the VPS
+
+The VPS keeps its production `.env` locally; it is ignored by Git and is not sent
+through GitHub Actions.
 
 ## Workspace map
 

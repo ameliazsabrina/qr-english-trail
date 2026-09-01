@@ -890,12 +890,11 @@ function QuizState({
       role="status"
       aria-live="polite"
     >
-      <span
-        className="mb-[18px] grid size-[74px] place-items-center rounded-[24px_24px_24px_7px] bg-sun text-[2rem] font-black text-ink shadow-[0_8px_0_#151515]"
-        aria-hidden="true"
-      >
-        B
-      </span>
+      <img
+        className="mb-[18px] h-[74px] w-[204px] object-cover"
+        src="/assets/logo.svg"
+        alt=""
+      />
       <p className="font-bold text-muted">{message}</p>
       {action && (
         <button
