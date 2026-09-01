@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup && cp -R src/db/migrations dist/migrations",
+    "build": "tsup && mkdir -p dist/migrations && cp src/db/migrations/*.sql dist/migrations/",
     "start": "node dist/server.js",
+    "start:container": "node dist/migrate-sqlite.js && node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node --env-file-if-exists=../../.env --import tsx src/scripts/migrate-sqlite.ts",
     "db:seed": "node --env-file-if-exists=../../.env --import tsx src/scripts/seed-sqlite.ts",

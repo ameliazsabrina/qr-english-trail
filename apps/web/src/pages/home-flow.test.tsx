@@ -61,7 +61,7 @@ describe("home session flow", () => {
     await user.type(screen.getByLabelText("Your name"), "Rara");
     await user.click(screen.getByRole("button", { name: "Start Playing" }));
 
-    expect(await screen.findByRole("heading", { name: /save your recovery code/i })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /simpan kode ini yaa/i })).toBeTruthy();
     expect(screen.getByText("BJN-AAAA-BBBB-CCCC")).toBeTruthy();
     expect(localStorage.getItem("bonjotanPlayerSession")).toContain(sessionToken);
   });

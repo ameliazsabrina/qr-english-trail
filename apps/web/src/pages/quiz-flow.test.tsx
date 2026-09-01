@@ -61,7 +61,7 @@ describe("server-authoritative QR quiz flow", () => {
     const user = userEvent.setup();
     render(<MemoryRouter><PointQuizFlow slug="greetings" /></MemoryRouter>);
     await user.click(screen.getByRole("button", { name: "Start Playing" }));
-    expect(await screen.findByRole("heading", { name: /save your recovery code/i })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /simpan kode ini yaa/i })).toBeTruthy();
     expect(localStorage.getItem("bonjotanPlayerProfile")).toBeNull();
     expect(localStorage.getItem("bonjotanPlayerSession")).toContain('"version":2');
   });
@@ -90,7 +90,7 @@ describe("server-authoritative QR quiz flow", () => {
     expect(screen.getByRole("link", { name: /recover an existing player/i }).getAttribute("href")).toBe("/recover?returnTo=%2Fpoint%2Fgreetings");
     await user.type(screen.getByLabelText("Your name"), "Rara");
     await user.click(screen.getByRole("button", { name: "Start Playing" }));
-    expect(await screen.findByRole("heading", { name: /save your recovery code/i })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /simpan kode ini yaa/i })).toBeTruthy();
     expect(startAttempt).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: "I saved my code" }));

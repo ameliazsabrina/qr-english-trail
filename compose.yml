@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    image: bonjotan-api:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3001
+      WEB_ORIGIN: ${WEB_ORIGIN:?Set WEB_ORIGIN in .env}
+      SQLITE_PATH: /data/bonjotan.sqlite
+      SESSION_TOKEN_PEPPER: ${SESSION_TOKEN_PEPPER:?Set SESSION_TOKEN_PEPPER in .env}
+      RECOVERY_CODE_PEPPER: ${RECOVERY_CODE_PEPPER:?Set RECOVERY_CODE_PEPPER in .env}
+      SESSION_LIFETIME_DAYS: ${SESSION_LIFETIME_DAYS:-90}
+    volumes:
+      - bonjotan-data:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      target: web
+    image: bonjotan-web:latest
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-80}:80"
+
+volumes:
+  bonjotan-data:

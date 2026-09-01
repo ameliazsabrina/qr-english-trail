@@ -55,6 +55,26 @@ pnpm test
 pnpm build
 ```
 
+## VPS deployment with Docker Compose
+
+The production stack runs the static web app behind Nginx and proxies `/api` to a
+single Fastify container. SQLite is kept in the named `bonjotan-data` volume, and
+the API applies pending migrations before it starts.
+
+```bash
+cp .env.example .env
+# Set WEB_ORIGIN to the public https:// URL and replace both peppers with
+# different random values of at least 32 characters.
+docker compose build
+docker compose up -d
+docker compose ps
+```
+
+By default the web service binds host port 80. Set `HTTP_PORT` in `.env` if a
+host-level reverse proxy already owns that port. Terminate TLS at that reverse
+proxy, and back up the `bonjotan-data` volume regularly. Only one API replica may
+write to this local SQLite database.
+
 ## Workspace map
 
 ```text
