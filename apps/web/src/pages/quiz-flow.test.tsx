@@ -37,18 +37,18 @@ describe("server-authoritative QR quiz flow", () => {
   it("announces scoring mode before showing attempt-bound questions", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter><PointQuizFlow slug="greetings" /></MemoryRouter>);
-    expect(await screen.findByRole("heading", { name: "Score Mode" })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Start quiz" }));
+    expect(await screen.findByRole("heading", { name: "Let’s Earn Points!" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Start Quiz!" }));
     expect(await screen.findByRole("heading", { name: "Question 1?" })).toBeTruthy();
     expect(startAttempt).toHaveBeenCalledWith("t".repeat(43), "greetings", expect.any(AbortSignal));
     expect(createPlayer).not.toHaveBeenCalled();
   });
 
-  it("clearly announces Practice Mode before a replay", async () => {
+  it("clearly announces practice mode before a replay", async () => {
     vi.mocked(startAttempt).mockResolvedValue({ id: "attempt-2", mode: "practice", expiresAt: new Date().toISOString(), questions });
     render(<MemoryRouter><PointQuizFlow slug="greetings" /></MemoryRouter>);
-    expect(await screen.findByRole("heading", { name: "Practice Mode" })).toBeTruthy();
-    expect(screen.getByText(/leaderboard score will not change/i)).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Let’s Practice!" })).toBeTruthy();
+    expect(screen.getByText(/leaderboard score will stay the same/i)).toBeTruthy();
   });
 
   it("commits a legacy profile migration only after server creation succeeds", async () => {
@@ -94,7 +94,7 @@ describe("server-authoritative QR quiz flow", () => {
     expect(startAttempt).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: "I saved my code" }));
-    expect(await screen.findByRole("heading", { name: "Score Mode" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Let’s Earn Points!" })).toBeTruthy();
     expect(startAttempt).toHaveBeenCalledWith("s".repeat(43), "greetings", expect.any(AbortSignal));
   });
 

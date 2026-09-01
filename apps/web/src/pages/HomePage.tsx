@@ -647,7 +647,6 @@ function QuizScreen({
           className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#ffc400]"
           aria-labelledby="mode-title"
         >
-          {" "}
           <span className="text-5xl" aria-hidden="true">
             {practice ? "🔄" : "⭐"}
           </span>
@@ -669,7 +668,6 @@ function QuizScreen({
           >
             {practice ? "Practice Again!" : "Start Quiz!"}
           </button>
-          ```
         </section>
       </main>
     );
