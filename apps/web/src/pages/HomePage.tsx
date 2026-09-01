@@ -1,7 +1,26 @@
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
-import type { AttemptCompletion, PlayerProfile, QuizAnswerResult, QuizAttempt, QuizQuestion } from "@bonjotan/shared-types";
+import {
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import type {
+  AttemptCompletion,
+  PlayerProfile,
+  QuizAnswerResult,
+  QuizAttempt,
+  QuizQuestion,
+} from "@bonjotan/shared-types";
 import { Link } from "react-router-dom";
-import { answerAttempt, ApiRequestError, createPlayer, getCurrentPlayer, startAttempt, updateCurrentPlayer } from "../services/api";
+import {
+  answerAttempt,
+  ApiRequestError,
+  createPlayer,
+  getCurrentPlayer,
+  startAttempt,
+  updateCurrentPlayer,
+} from "../services/api";
 import {
   clearPlayerSession,
   loadLegacyPlayerProfile,
@@ -25,7 +44,9 @@ const LOGO =
   "relative block aspect-[3.125] overflow-hidden [&>img]:absolute [&>img]:-top-[102.5%] [&>img]:left-0 [&>img]:block [&>img]:h-auto [&>img]:w-full";
 
 export function HomePage() {
-  const [onboardingStarted, setOnboardingStarted] = useState(() => Boolean(loadPlayerSession()));
+  const [onboardingStarted, setOnboardingStarted] = useState(() =>
+    Boolean(loadPlayerSession()),
+  );
 
   if (onboardingStarted) {
     return (
@@ -38,7 +59,10 @@ export function HomePage() {
   }
 
   return (
-    <main id="main-content" className="grid min-h-dvh place-items-center bg-sun px-5 py-[max(24px,env(safe-area-inset-top))]">
+    <main
+      id="main-content"
+      className="grid min-h-dvh place-items-center bg-sun px-5 py-[max(24px,env(safe-area-inset-top))]"
+    >
       <section
         className="w-full max-w-[560px] rounded-[30px] border-[3px] border-ink bg-cream p-[clamp(28px,8vw,52px)] text-center shadow-[0_10px_0_#151515]"
         aria-labelledby="scan-title"
@@ -70,35 +94,70 @@ export function HomePage() {
 }
 
 export function PointQuizFlow({ slug }: { slug: string }) {
-  return <AccountGate returnTo={`/point/${slug}`}>{(profile, token, onEdit) => <QuizScreen slug={slug} player={profile} token={token} onChangeProfile={onEdit} />}</AccountGate>;
+  return (
+    <AccountGate returnTo={`/point/${slug}`}>
+      {(profile, token, onEdit) => (
+        <QuizScreen
+          slug={slug}
+          player={profile}
+          token={token}
+          onChangeProfile={onEdit}
+        />
+      )}
+    </AccountGate>
+  );
 }
 
-function AccountGate({ children, returnTo }: { children: ReactNode | ((profile: PlayerProfile, token: string, onEdit: () => void) => ReactNode); returnTo: string }) {
+function AccountGate({
+  children,
+  returnTo,
+}: {
+  children:
+    | ReactNode
+    | ((
+        profile: PlayerProfile,
+        token: string,
+        onEdit: () => void,
+      ) => ReactNode);
+  returnTo: string;
+}) {
   const storedSession = useState(() => loadPlayerSession())[0];
   const legacy = useState(() => loadLegacyPlayerProfile())[0];
   const [token, setToken] = useState(storedSession?.token);
   const [profile, setProfile] = useState<PlayerProfile>();
-  const [status, setStatus] = useState<"loading" | "setup" | "ready" | "auth-error">(storedSession ? "loading" : "setup");
+  const [status, setStatus] = useState<
+    "loading" | "setup" | "ready" | "auth-error"
+  >(storedSession ? "loading" : "setup");
   const [authRevision, setAuthRevision] = useState(0);
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(() => legacy?.name ?? "");
-  const [avatarInput, setAvatarInput] = useState(() => legacy?.avatar ?? AVATARS[0]!.src);
+  const [avatarInput, setAvatarInput] = useState(
+    () => legacy?.avatar ?? AVATARS[0]!.src,
+  );
   const [error, setError] = useState<string>();
   const [recoveryCode, setRecoveryCode] = useState<string>();
 
   useEffect(() => {
     if (!token) return;
     const controller = new AbortController();
-    getCurrentPlayer(token, controller.signal).then((next) => {
-      setProfile(next); setNameInput(next.nickname); setAvatarInput(next.avatarId); setStatus("ready");
-    }).catch((reason: unknown) => {
-      if (reason instanceof DOMException && reason.name === "AbortError") return;
-      if (reason instanceof ApiRequestError && reason.status === 401) {
-        clearPlayerSession(); setToken(undefined); setStatus("setup");
-      } else {
-        setStatus("auth-error");
-      }
-    });
+    getCurrentPlayer(token, controller.signal)
+      .then((next) => {
+        setProfile(next);
+        setNameInput(next.nickname);
+        setAvatarInput(next.avatarId);
+        setStatus("ready");
+      })
+      .catch((reason: unknown) => {
+        if (reason instanceof DOMException && reason.name === "AbortError")
+          return;
+        if (reason instanceof ApiRequestError && reason.status === 401) {
+          clearPlayerSession();
+          setToken(undefined);
+          setStatus("setup");
+        } else {
+          setStatus("auth-error");
+        }
+      });
     return () => controller.abort();
   }, [token, authRevision]);
 
@@ -107,22 +166,46 @@ function AccountGate({ children, returnTo }: { children: ReactNode | ((profile: 
     try {
       if (editing && token) {
         const next = await updateCurrentPlayer(token, name, avatar);
-        setProfile(next); setEditing(false); setStatus("ready");
+        setProfile(next);
+        setEditing(false);
+        setStatus("ready");
         return;
       }
       const created = await createPlayer(name, avatar);
       const saved = savePlayerSession(created.sessionToken);
       if (saved) removeLegacyPlayerProfile();
-      setToken(created.sessionToken); setProfile(created.player); setStatus("ready");
+      setToken(created.sessionToken);
+      setProfile(created.player);
+      setStatus("ready");
       setRecoveryCode(created.recoveryCode);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "We could not save your player. Please try again.");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "We could not save your player. Please try again.",
+      );
     }
   }
 
   if (status === "loading") return <QuizState message="Finding your player…" />;
-  if (status === "auth-error") return <QuizState message="We couldn’t reconnect to your player. Your saved session is still safe in this browser." action="Try again" onAction={() => { setStatus("loading"); setAuthRevision((value) => value + 1); }} />;
-  if (recoveryCode) return <RecoveryCodeScreen code={recoveryCode} onContinue={() => setRecoveryCode(undefined)} />;
+  if (status === "auth-error")
+    return (
+      <QuizState
+        message="We couldn’t reconnect to your player. Your saved session is still safe in this browser."
+        action="Try again"
+        onAction={() => {
+          setStatus("loading");
+          setAuthRevision((value) => value + 1);
+        }}
+      />
+    );
+  if (recoveryCode)
+    return (
+      <RecoveryCodeScreen
+        code={recoveryCode}
+        onContinue={() => setRecoveryCode(undefined)}
+      />
+    );
 
   if (!profile || editing || status === "setup") {
     return (
@@ -138,8 +221,18 @@ function AccountGate({ children, returnTo }: { children: ReactNode | ((profile: 
       />
     );
   }
-  const onEdit = () => { setNameInput(profile.nickname); setAvatarInput(profile.avatarId); setEditing(true); };
-  return <>{typeof children === "function" ? children(profile, token!, onEdit) : children}</>;
+  const onEdit = () => {
+    setNameInput(profile.nickname);
+    setAvatarInput(profile.avatarId);
+    setEditing(true);
+  };
+  return (
+    <>
+      {typeof children === "function"
+        ? children(profile, token!, onEdit)
+        : children}
+    </>
+  );
 }
 
 function WelcomeScreen({
@@ -170,7 +263,10 @@ function WelcomeScreen({
   }
 
   return (
-    <main id="main-content" className="relative isolate flex min-h-dvh overflow-hidden bg-cream px-5 py-6 text-ink">
+    <main
+      id="main-content"
+      className="relative isolate flex min-h-dvh overflow-hidden bg-cream px-5 py-6 text-ink"
+    >
       <div
         className="absolute -right-9 -top-11 -z-10 size-28 rounded-full bg-sun/50"
         aria-hidden="true"
@@ -187,7 +283,14 @@ function WelcomeScreen({
         className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-[500px] flex-col items-center justify-center text-center md:min-h-[calc(100dvh-5rem)]"
         aria-labelledby="welcome-title"
       >
-        <h1 className="sr-only" id="welcome-title" ref={headingRef} tabIndex={-1}>{editing ? "Edit your player" : "Create your player"}</h1>
+        <h1
+          className="sr-only"
+          id="welcome-title"
+          ref={headingRef}
+          tabIndex={-1}
+        >
+          {editing ? "Edit your player" : "Create your player"}
+        </h1>
         <div className="mb-8 flex items-center font-black">
           <span className={`${LOGO} w-[min(62vw,245px)]`}>
             <img src="/assets/logo.svg" alt="Bonjohop" />
@@ -216,9 +319,22 @@ function WelcomeScreen({
           >
             {editing ? "Save changes" : "Start Playing"}
           </button>
-          {error && <p className="m-0 text-center font-bold text-red-700" role="alert" aria-live="assertive">{error}</p>}
+          {error && (
+            <p
+              className="m-0 text-center font-bold text-red-700"
+              role="alert"
+              aria-live="assertive"
+            >
+              {error}
+            </p>
+          )}
           {!editing && (
-            <Link className="text-center font-bold text-ink" to={`/recover?returnTo=${encodeURIComponent(returnTo)}`}>Recover an existing player</Link>
+            <Link
+              className="text-center font-bold text-ink"
+              to={`/recover?returnTo=${encodeURIComponent(returnTo)}`}
+            >
+              Recover an existing player
+            </Link>
           )}
         </form>
       </section>
@@ -226,44 +342,121 @@ function WelcomeScreen({
   );
 }
 
-function ReadyToScanScreen({ player, onChangeProfile }: { player: PlayerProfile; onChangeProfile: () => void }) {
+function ReadyToScanScreen({
+  player,
+  onChangeProfile,
+}: {
+  player: PlayerProfile;
+  onChangeProfile: () => void;
+}) {
   const headingRef = useInitialFocus<HTMLHeadingElement>();
 
   return (
-    <main id="main-content" className="grid min-h-dvh place-items-center bg-sun px-5 py-[max(24px,env(safe-area-inset-top))]">
-      <section className="w-full max-w-[560px] rounded-[30px] border-[3px] border-ink bg-cream p-[clamp(28px,8vw,52px)] shadow-[0_10px_0_#151515]" aria-labelledby="ready-title">
+    <main
+      id="main-content"
+      className="grid min-h-dvh place-items-center bg-sun px-5 py-[max(24px,env(safe-area-inset-top))]"
+    >
+      <section
+        className="w-full max-w-[560px] rounded-[30px] border-[3px] border-ink bg-cream p-[clamp(28px,8vw,52px)] shadow-[0_10px_0_#151515]"
+        aria-labelledby="ready-title"
+      >
         <div className="flex items-center gap-4 border-b-2 border-line pb-5">
-          <img className="size-20 rounded-full border-2 border-ink bg-sun-soft object-cover" src={player.avatarId} alt="" width="500" height="500" />
+          <img
+            className="size-20 rounded-full border-2 border-ink bg-sun-soft object-cover"
+            src={player.avatarId}
+            alt=""
+            width="500"
+            height="500"
+          />
           <div className="min-w-0">
-            <p className="m-0 text-sm font-extrabold uppercase tracking-[.08em] text-muted">Ready to explore</p>
-            <p className="m-0 truncate text-2xl font-black">{player.nickname}</p>
+            <p className="m-0 text-sm font-extrabold uppercase tracking-[.08em] text-muted">
+              Ready to explore
+            </p>
+            <p className="m-0 truncate text-2xl font-black">
+              {player.nickname}
+            </p>
           </div>
         </div>
         <div className="py-7">
-          <span className="text-5xl" aria-hidden="true">⌁</span>
-          <h1 className="mb-3 mt-3 text-[clamp(2.4rem,10vw,4rem)] leading-none tracking-[-.035em] outline-none" id="ready-title" ref={headingRef} tabIndex={-1}>Ready to scan</h1>
-          <p className="m-0 text-[1.05rem] leading-[1.55] text-muted">You’re ready—scan an English Point QR code.</p>
-          <p className="mb-0 mt-3 leading-[1.55] text-muted">Open your phone’s camera, point it at a village QR sign, then tap the link that appears.</p>
+          <span className="text-5xl" aria-hidden="true">
+            ⌁
+          </span>
+          <h1
+            className="mb-3 mt-3 text-[clamp(2.4rem,10vw,4rem)] leading-none tracking-[-.035em] outline-none"
+            id="ready-title"
+            ref={headingRef}
+            tabIndex={-1}
+          >
+            Ready to scan
+          </h1>
+          <p className="m-0 text-[1.05rem] leading-[1.55] text-muted">
+            You’re ready—scan an English Point QR code.
+          </p>
+          <p className="mb-0 mt-3 leading-[1.55] text-muted">
+            Open your phone’s camera, point it at a village QR sign, then tap
+            the link that appears.
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <button className="min-h-14 rounded-2xl border-2 border-ink bg-white px-5 py-3 font-black text-ink focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ink" type="button" onClick={onChangeProfile}>Edit profile</button>
-          <Link className="flex min-h-14 items-center justify-center rounded-2xl border-2 border-ink bg-ink px-5 py-3 font-black text-white no-underline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ink" to="/leaderboard">View leaderboard</Link>
+          <button
+            className="min-h-14 rounded-2xl border-2 border-ink bg-white px-5 py-3 font-black text-ink focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ink"
+            type="button"
+            onClick={onChangeProfile}
+          >
+            Edit profile
+          </button>
+          <Link
+            className="flex min-h-14 items-center justify-center rounded-2xl border-2 border-ink bg-ink px-5 py-3 font-black text-white no-underline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ink"
+            to="/leaderboard"
+          >
+            View leaderboard
+          </Link>
         </div>
       </section>
     </main>
   );
 }
 
-function RecoveryCodeScreen({ code, onContinue }: { code: string; onContinue: () => void }) {
+function RecoveryCodeScreen({
+  code,
+  onContinue,
+}: {
+  code: string;
+  onContinue: () => void;
+}) {
   const headingRef = useInitialFocus<HTMLHeadingElement>();
 
   return (
-    <main id="main-content" className="grid min-h-dvh place-items-center bg-sun px-5 text-center">
-      <section className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#151515]" aria-labelledby="recovery-title">
-        <h1 className="outline-none" id="recovery-title" ref={headingRef} tabIndex={-1}>Save your recovery code</h1>
-        <p>Use this code to restore the same score and ranking on another browser. It is shown only once.</p>
-        <output className="my-6 block rounded-xl bg-cream p-4 text-xl font-black tracking-wider">{code}</output>
-        <button className={`${PRIMARY_BUTTON} w-full`} type="button" onClick={onContinue}>I saved my code</button>
+    <main
+      id="main-content"
+      className="grid min-h-dvh place-items-center bg-sun px-5 text-center"
+    >
+      <section
+        className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#151515]"
+        aria-labelledby="recovery-title"
+      >
+        <h1
+          className="outline-none"
+          id="recovery-title"
+          ref={headingRef}
+          tabIndex={-1}
+        >
+          Simpan kode ini yaa!
+        </h1>
+        <p>
+          Kode ini digunakan untuk mengakses akunmu. Simpan di tempat yang aman,
+          misalnya di catatan HP atau screenshot. Jangan sampai hilang.
+        </p>
+        <output className="my-6 block rounded-xl bg-cream p-4 text-xl font-black tracking-wider">
+          {code}
+        </output>
+        <button
+          className={`${PRIMARY_BUTTON} w-full`}
+          type="button"
+          onClick={onContinue}
+        >
+          I saved my code
+        </button>
       </section>
     </main>
   );
@@ -404,14 +597,23 @@ function QuizScreen({
     setSelectedOptionId(optionId);
     setIsChecking(true);
     try {
-      const response = await answerAttempt(token, attempt!.id, question.id, optionId);
+      const response = await answerAttempt(
+        token,
+        attempt!.id,
+        question.id,
+        optionId,
+      );
       setAnswerResult(response.result);
       setCompletion(response.completion);
       setAnswerError(undefined);
       if (response.result.correct) setScore((current) => current + 1);
     } catch (reason) {
       setSelectedOptionId(undefined);
-      setAnswerError(reason instanceof Error ? reason.message : "We could not save that answer. Try again.");
+      setAnswerError(
+        reason instanceof Error
+          ? reason.message
+          : "We could not save that answer. Try again.",
+      );
     } finally {
       setIsChecking(false);
     }
@@ -437,19 +639,40 @@ function QuizScreen({
   if (attempt && !modeAcknowledged) {
     const practice = attempt.mode === "practice";
     return (
-      <main id="main-content" className="grid min-h-dvh place-items-center bg-cream px-5 text-center">
-        <section className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#ffc400]" aria-labelledby="mode-title">
-          <span className="text-5xl" aria-hidden="true">{practice ? "↻" : "★"}</span>
+      <main
+        id="main-content"
+        className="grid min-h-dvh place-items-center bg-cream px-5 text-center"
+      >
+        <section
+          className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#ffc400]"
+          aria-labelledby="mode-title"
+        >
+          <span className="text-5xl" aria-hidden="true">
+            {practice ? "↻" : "★"}
+          </span>
           <h1 id="mode-title">{practice ? "Practice Mode" : "Score Mode"}</h1>
-          <p>{practice ? "You already discovered this English Point. Practice as much as you like—your leaderboard score will not change." : "This is your first completion. Correct answers earn 100 points, plus a 20-point completion bonus."}</p>
-          <button className={`${PRIMARY_BUTTON} mt-5 w-full`} type="button" onClick={() => setModeAcknowledged(true)}>Start quiz</button>
+          <p>
+            {practice
+              ? "You already discovered this English Point. Practice as much as you like—your leaderboard score will not change."
+              : "This is your first completion. Correct answers earn 100 points, plus a 20-point completion bonus."}
+          </p>
+          <button
+            className={`${PRIMARY_BUTTON} mt-5 w-full`}
+            type="button"
+            onClick={() => setModeAcknowledged(true)}
+          >
+            Start quiz
+          </button>
         </section>
       </main>
     );
   }
   if (!question) {
     return (
-      <main id="main-content" className="flex min-h-dvh flex-col items-center justify-center bg-cream px-5 py-[30px] text-center">
+      <main
+        id="main-content"
+        className="flex min-h-dvh flex-col items-center justify-center bg-cream px-5 py-[30px] text-center"
+      >
         <img
           className="mb-5 size-28 rounded-full border-[3px] border-ink bg-sun-soft object-cover shadow-[0_8px_0_#ffc400]"
           src={player.avatarId}
@@ -468,9 +691,18 @@ function QuizScreen({
           <strong>{questions.length}</strong> questions right.
         </p>
         {completion && (
-          <div className="mb-6 rounded-2xl border-2 border-ink bg-white px-5 py-4" aria-live="polite">
-            <strong className="block text-xl">+{completion.awardedScore} leaderboard points</strong>
-            <span>{completion.progress.totalScore} total · {completion.progress.completedPointCount}/10 English Points discovered</span>
+          <div
+            className="mb-6 rounded-2xl border-2 border-ink bg-white px-5 py-4"
+            aria-live="polite"
+          >
+            <strong className="block text-xl">
+              +{completion.awardedScore} leaderboard points
+            </strong>
+            <span>
+              {completion.progress.totalScore} total ·{" "}
+              {completion.progress.completedPointCount}/10 English Points
+              discovered
+            </span>
           </div>
         )}
         <button
@@ -624,7 +856,15 @@ function QuizScreen({
           </button>
         </aside>
       )}
-      {answerError && <p className="m-0 bg-white p-3 text-center font-bold text-red-700" role="alert" aria-live="assertive">{answerError}</p>}
+      {answerError && (
+        <p
+          className="m-0 bg-white p-3 text-center font-bold text-red-700"
+          role="alert"
+          aria-live="assertive"
+        >
+          {answerError}
+        </p>
+      )}
     </main>
   );
 }
@@ -667,6 +907,8 @@ function QuizState({
 
 function useInitialFocus<T extends HTMLElement>() {
   const ref = useRef<T>(null);
-  useEffect(() => { ref.current?.focus(); }, []);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
   return ref;
 }
