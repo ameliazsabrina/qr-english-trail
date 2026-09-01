@@ -333,7 +333,7 @@ function WelcomeScreen({
               className="text-center font-bold text-ink"
               to={`/recover?returnTo=${encodeURIComponent(returnTo)}`}
             >
-              Recover an existing player
+              Sudah punya akun? Pulihkan dengan kodemu.
             </Link>
           )}
         </form>
