@@ -647,22 +647,26 @@ function QuizScreen({
           className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#ffc400]"
           aria-labelledby="mode-title"
         >
+          ```tsx
           <span className="text-5xl" aria-hidden="true">
-            {practice ? "↻" : "★"}
+            {practice ? "🔄" : "⭐"}
           </span>
-          <h1 id="mode-title">{practice ? "Practice Mode" : "Score Mode"}</h1>
+          <h1 id="mode-title">
+            {practice ? "Let’s Practice!" : "Let’s Earn Points!"}
+          </h1>
           <p>
             {practice
-              ? "You already discovered this English Point. Practice as much as you like—your leaderboard score will not change."
-              : "This is your first completion. Correct answers earn 100 points, plus a 20-point completion bonus."}
+              ? "Ready for another round? Practice as much as you like! Your leaderboard score will stay the same."
+              : "Answer correctly to earn 100 points, then get 20 bonus points when you finish the quiz!"}
           </p>
           <button
             className={`${PRIMARY_BUTTON} mt-5 w-full`}
             type="button"
             onClick={() => setModeAcknowledged(true)}
           >
-            Start quiz
+            {practice ? "Practice Again!" : "Start Quiz!"}
           </button>
+          ```
         </section>
       </main>
     );
