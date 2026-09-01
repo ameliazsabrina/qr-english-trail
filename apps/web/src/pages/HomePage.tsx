@@ -647,11 +647,14 @@ function QuizScreen({
           className="w-full max-w-lg rounded-[28px] border-[3px] border-ink bg-white p-8 shadow-[0_10px_0_#ffc400]"
           aria-labelledby="mode-title"
         >
-          ```tsx
+          {" "}
           <span className="text-5xl" aria-hidden="true">
             {practice ? "🔄" : "⭐"}
           </span>
-          <h1 id="mode-title">
+          <h1
+            id="mode-title"
+            className="mb-3 mt-3 text-[clamp(2.4rem,10vw,4rem)] leading-none tracking-[-.035em] font-semibold"
+          >
             {practice ? "Let’s Practice!" : "Let’s Earn Points!"}
           </h1>
           <p>
